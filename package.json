@@ -1,0 +1,29 @@
+{
+  "name": "roughdraft",
+  "version": "0.1.0",
+  "description": "An infinite canvas for writing",
+  "license": "MIT",
+  "author": "Nathan Baschez",
+  "bin": {
+    "roughdraft": "./packages/server/bin/roughdraft.mjs"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @roughdraft/app dev",
+    "build": "pnpm --filter @roughdraft/app build && pnpm --filter @roughdraft/server build",
+    "preview": "node packages/server/bin/roughdraft.mjs"
+  },
+  "files": [
+    "packages/app/dist",
+    "packages/server/dist",
+    "packages/server/bin"
+  ],
+  "dependencies": {
+    "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild"]
+  }
+}
