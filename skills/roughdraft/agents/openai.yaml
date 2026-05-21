@@ -1,0 +1,4 @@
+interface:
+  display_name: "Roughdraft"
+  short_description: "Review Markdown with Roughdraft handoffs"
+  default_prompt: "Use $roughdraft to open this Markdown file for review and respond to the feedback."
