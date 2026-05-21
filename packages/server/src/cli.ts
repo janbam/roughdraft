@@ -100,6 +100,13 @@ type OpenMode =
   | "existing-window"
   | "none";
 
+interface OpenUrlOptions {
+  env?: NodeJS.ProcessEnv;
+  platform?: NodeJS.Platform;
+  hasChromeAppMode?: () => boolean;
+  openDetached?: (command: string, args: string[]) => void;
+}
+
 interface EnsureRunningResult {
   server: {
     port: number;
@@ -616,32 +623,62 @@ function openDetached(command: string, args: string[]) {
   child.unref();
 }
 
-function defaultOpenUrl(url: string): OpenMode {
-  if (process.env.ROUGHDRAFT_NO_OPEN === "1") {
+function configuredBrowserCommand(env: NodeJS.ProcessEnv): string | null {
+  const configuredBrowser = env.ROUGHDRAFT_BROWSER?.trim();
+  return configuredBrowser && configuredBrowser.length > 0
+    ? configuredBrowser
+    : null;
+}
+
+/**
+ * Opens a Roughdraft URL with the configured browser command or host default.
+ */
+export function openUrlWithSystemBrowser(
+  url: string,
+  options: OpenUrlOptions = {},
+): OpenMode {
+  const env = options.env ?? process.env;
+  const platform = options.platform ?? process.platform;
+  const canUseChromeAppMode = options.hasChromeAppMode ?? hasChromeAppMode;
+  const launch = options.openDetached ?? openDetached;
+
+  // Honor the explicit no-open switch before considering any browser launcher.
+  if (env.ROUGHDRAFT_NO_OPEN === "1") {
     return "disabled";
   }
 
-  if (hasChromeAppMode()) {
-    openDetached("open", ["-na", "Google Chrome", "--args", `--app=${url}`]);
+  const configuredBrowser = configuredBrowserCommand(env);
+  if (configuredBrowser) {
+    launch(configuredBrowser, [url]);
+    return "browser";
+  }
+
+  // Keep macOS Chrome app mode as the default only when no browser is configured.
+  if (canUseChromeAppMode()) {
+    launch("open", ["-na", "Google Chrome", "--args", `--app=${url}`]);
     return "chrome-app";
   }
 
-  if (process.platform === "darwin") {
-    openDetached("open", [url]);
+  if (platform === "darwin") {
+    launch("open", [url]);
     return "browser";
   }
 
-  if (process.platform === "linux") {
-    openDetached("xdg-open", [url]);
+  if (platform === "linux") {
+    launch("xdg-open", [url]);
     return "browser";
   }
 
-  if (process.platform === "win32") {
-    openDetached("cmd", ["/c", "start", "", url]);
+  if (platform === "win32") {
+    launch("cmd", ["/c", "start", "", url]);
     return "browser";
   }
 
   return "none";
+}
+
+function defaultOpenUrl(url: string): OpenMode {
+  return openUrlWithSystemBrowser(url);
 }
 
 function defaultIsProcessRunning(pid: number): boolean {
@@ -838,6 +875,7 @@ function printCommandHelp(
     log("                        non-loopback host. Must match the value the");
     log("                        hosted server was started with.");
     log("  ROUGHDRAFT_NO_OPEN    Set to 1 to suppress browser launch.");
+    log("  ROUGHDRAFT_BROWSER    Browser command/path to open document URLs.");
     log("  ROUGHDRAFT_BIND_HOST  Comma-separated bind hosts for the hosted");
     log(
       "                        server (default: loopback). Set to 0.0.0.0 or",
@@ -2681,7 +2719,7 @@ export async function runCli(
           } else if (openMode === "existing-window") {
             deps.log(`Reused an existing Roughdraft window: ${targetUrl}`);
           } else if (openMode === "browser") {
-            deps.log(`Opened Roughdraft in the default browser: ${targetUrl}`);
+            deps.log(`Opened Roughdraft in browser: ${targetUrl}`);
           } else {
             deps.log(`Roughdraft is running at ${targetUrl}`);
           }
@@ -2726,7 +2764,7 @@ export async function runCli(
       }
 
       if (openMode === "browser") {
-        deps.log(`Opened Roughdraft in the default browser: ${targetUrl}`);
+        deps.log(`Opened Roughdraft in browser: ${targetUrl}`);
         return 0;
       }
 

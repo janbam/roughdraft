@@ -9,6 +9,7 @@ import {
   createCliDependencies,
   ensureServerRunning,
   getServerStateFilePath,
+  openUrlWithSystemBrowser,
   runCli,
 } from "./cli";
 import { ROUGHDRAFT_DEFAULT_PORT } from "./network";
@@ -105,6 +106,23 @@ describe("cli", () => {
     return JSON.parse(logs[0] ?? "{}") as T;
   }
 
+  function captureOpenUrlLaunch(
+    env: NodeJS.ProcessEnv,
+    platform: NodeJS.Platform = "linux",
+  ) {
+    const launched: Array<{ command: string; args: string[] }> = [];
+    const mode = openUrlWithSystemBrowser("http://localhost:7373/?path=x", {
+      env,
+      platform,
+      hasChromeAppMode: () => false,
+      openDetached: (command, args) => {
+        launched.push({ command, args });
+      },
+    });
+
+    return { launched, mode };
+  }
+
   async function noUpdateStatus() {
     return {
       packageName: "roughdraft",
@@ -197,6 +215,44 @@ describe("cli", () => {
       getSpawnCount: () => spawnCount,
     };
   }
+
+  it("opens URLs with ROUGHDRAFT_BROWSER when configured", () => {
+    const { launched, mode } = captureOpenUrlLaunch({
+      ROUGHDRAFT_BROWSER: "/usr/local/bin/chrome",
+    });
+
+    expect(mode).toBe("browser");
+    expect(launched).toEqual([
+      {
+        command: "/usr/local/bin/chrome",
+        args: ["http://localhost:7373/?path=x"],
+      },
+    ]);
+  });
+
+  it("lets ROUGHDRAFT_NO_OPEN override ROUGHDRAFT_BROWSER", () => {
+    const { launched, mode } = captureOpenUrlLaunch({
+      ROUGHDRAFT_BROWSER: "/usr/local/bin/chrome",
+      ROUGHDRAFT_NO_OPEN: "1",
+    });
+
+    expect(mode).toBe("disabled");
+    expect(launched).toEqual([]);
+  });
+
+  it("falls back to the platform browser when ROUGHDRAFT_BROWSER is blank", () => {
+    const { launched, mode } = captureOpenUrlLaunch({
+      ROUGHDRAFT_BROWSER: "   ",
+    });
+
+    expect(mode).toBe("browser");
+    expect(launched).toEqual([
+      {
+        command: "xdg-open",
+        args: ["http://localhost:7373/?path=x"],
+      },
+    ]);
+  });
 
   it("writes server state and reuses a running background server", async () => {
     const test = createTestDependencies();
