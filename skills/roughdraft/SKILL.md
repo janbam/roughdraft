@@ -1,17 +1,6 @@
 ---
 name: roughdraft
-description: >-
-  Use Roughdraft as an agent/user collaboration loop for normal local Markdown
-  files through the globally installed `roughdraft` CLI. Roughdraft turns a
-  Markdown file on disk into a shared review surface: the agent writes or
-  updates the file, opens it locally for the user, waits for Done Reviewing,
-  reads CriticMarkup feedback from the same file, then responds with edits,
-  replies, or another review pass. Use this skill whenever the user asks to
-  open, review, comment on, revise, discuss, or iterate on a Markdown document
-  with Roughdraft, rd, CriticMarkup, Done Reviewing, inline comments, suggested
-  changes, plan review, document review, or agent/user back-and-forth feedback.
-  Treat `rd` as natural-language shorthand for Roughdraft, but do not create
-  aliases, symlinks, shell functions, or executables named `rd`.
+description: "Roughdraft is a tool for agent/user collaboration on Markdown files based on CriticMarkup. Use this skill for Roughdraft requests, `rd` shorthand, Markdown review, CriticMarkup, inline comments, suggested changes, plan review, and back-and-forth document feedback."
 ---
 
 # Roughdraft
@@ -21,6 +10,8 @@ Use Roughdraft to turn a normal local Markdown file into a shared review surface
 ## Assumptions
 
 Assume Roughdraft is installed globally and available as `roughdraft`. If the command is missing, ask the user to install it or run the setup they prefer instead of inventing a local wrapper.
+
+Treat `rd` as shorthand for Roughdraft in natural language. Do not create aliases, symlinks, shell functions, or executables named `rd`.
 
 ## Core Handoff Loop
 
