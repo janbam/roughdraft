@@ -95,7 +95,7 @@ Please revisit {==this sentence==}{>>Needs a source<<}{id="c1" by="user" at="202
 
 CriticMarkup inside inline code and fenced code blocks is literal example text, not live review feedback.
 
-For complete format rules, read `references/roughdraft-flavored-markdown.md`, copied from `https://www.roughdraft.md/spec/roughdraft-flavored-markdown.md`. Use that reference before manually editing Roughdraft Flavored Markdown in a way that creates, changes, resolves, or preserves comments, suggestions, metadata, threaded replies, or code-context marker text.
+For more detail, use the reference files in `references/`: `roughdraft-flavored-markdown.md` for the full format rules, `roughdraft-flavored-markdown.schema.json` for review-index JSON, and `fixtures/` for conformance examples. Read the relevant reference before manually editing Roughdraft Flavored Markdown in a way that creates, changes, resolves, or preserves comments, suggestions, metadata, threaded replies, or code-context marker text.
 
 ## Responding To Feedback
 
