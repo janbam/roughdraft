@@ -230,6 +230,10 @@ PORT
 ROUGHDRAFT_NO_OPEN=1
   Disable browser/app opening.
 
+ROUGHDRAFT_BROWSER
+  Browser command or absolute path used to open document URLs.
+  Example: ROUGHDRAFT_BROWSER=/usr/local/bin/chrome
+
 ROUGHDRAFT_STATE_FILE
   Exact path to the server state JSON file.
 
